@@ -12,7 +12,9 @@ from urlparse import urlparse
 
 
 def modify_html(dom_el, tag_name=None):
-    if isinstance(dom_el, bs4.element.NavigableString) and tag_name != 'script':
+    if (isinstance(dom_el, bs4.element.NavigableString) and
+            not isinstance(dom_el, bs4.element.Comment) and
+            tag_name != 'script'):
         fake_content = re.sub(ur'\b([А-яёЁA-z]{6})\b', ur'\1™',
                               dom_el.string,
                               flags=re.UNICODE)
@@ -46,7 +48,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             soup = BeautifulSoup(content, 'html.parser')
             modify_html(soup.body)
             replacement_href(soup, args.site, args.host, args.port)
-            content = str(soup)
+            content = soup.encode(formatter=None)
         s.wfile.write(content)
 
 if __name__ == '__main__':
@@ -63,8 +65,12 @@ if __name__ == '__main__':
     print "Server Starts - %s:%s. Site - %s" % (args.host,
                                                 args.port,
                                                 args.site)
+    for program_name in ['open', 'xdg-open']:
+        try:
+            call([program_name, 'http://' + args.host + ':' + str(args.port)])
+        except:
+            print 'Failed to call program: %s' % program_name
     try:
-        call(['xdg-open', 'http://' + args.host + ':' + str(args.port)])
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
