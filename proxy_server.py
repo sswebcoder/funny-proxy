@@ -57,7 +57,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.wfile.write(content)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Proxy Server 0.0.2')
+    parser = argparse.ArgumentParser(description='Proxy Server 0.0.3')
     parser.add_argument('--host', default='localhost',
                         help='Host that will listen server \
                         (default: localhost)')
