@@ -9,16 +9,21 @@ import argparse
 from subprocess import call
 from bs4 import BeautifulSoup
 from urlparse import urlparse
+from xml.sax.saxutils import escape
 
 
 def modify_html(dom_el, tag_name=None):
     if (isinstance(dom_el, bs4.element.NavigableString) and
             not isinstance(dom_el, bs4.element.Comment) and
             tag_name != 'script'):
-        fake_content = re.sub(ur'\b([А-яёЁA-z]{6})\b', ur'\1™',
-                              dom_el.string,
-                              flags=re.UNICODE)
-        dom_el.replace_with(fake_content)
+        if re.match(r'\<\?xml', dom_el.string):
+            dom_el.replace_with(escape(dom_el.string))
+        else:
+            fake_content = re.sub(ur'\b([А-яёЁA-z]{6})\b',
+                                  ur'\1™',
+                                  dom_el.string,
+                                  flags=re.UNICODE)
+            dom_el.replace_with(fake_content)
     if 'children' in dir(dom_el):
         for el in dom_el.children:
             modify_html(el, dom_el.name)
